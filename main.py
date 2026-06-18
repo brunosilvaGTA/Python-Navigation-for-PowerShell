@@ -1,4 +1,4 @@
-import subprocess, os
+import subprocess, os, ctypes, sys
 from function import PowerShellCommands
 
 def run(cmd, current_dir):
@@ -8,6 +8,32 @@ def run(cmd, current_dir):
     else:
         print(f"\n{completed.stdout.strip()}")
     return completed
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+def request_admin_privilegies():
+    try: 
+        result = ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, " ".join(sys.argv), None,1
+        )
+        return result > 32
+    except Exception as err:
+        print(f"Error: {err}")
+        return False
+if not is_admin():
+    sucess = request_admin_privilegies()
+    if sucess:
+        print("Request admin privilegies. Relaunching...")
+    else:
+        print("Admin privilegie request was denied.")
+        sys.exit()
+else:
+    print("Running without privilegies...")
+    subprocess.run("net session", shell=True)
+    input("Press enter to exit...")
 
 if __name__ == '__main__':
     exe = PowerShellCommands()
