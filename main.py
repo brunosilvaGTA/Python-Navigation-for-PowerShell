@@ -40,7 +40,18 @@ if __name__ == '__main__':
     directory = os.getcwd()
     while True:
         try:
-            choice = int(input("Select your action. \n 1. Listar elementos na pasta. \n 2. Ver configurações de IP. \n 3. Ver políticas de execução.\n 4. Ver diretório atual.\n 5. Voltar uma pasta\n 6. Sair\n"))
+            print("Select your action:")
+            print("1. Listar elementos na pasta.")
+            print("2. Ver configurações de IP.")
+            print("3. Ver políticas de execução.")
+            print("4. Ver diretório atual.")
+            print("5. Voltar uma pasta")
+            print("6. Ver listas de módulos disponíveis")
+            print("7. Importar módulo ActiveDirectory")
+            print("8. Encontrar um caminho específico")
+            print("9. listar florestas do AD")
+            print("10. Sair")
+            choice = int(input(" "))
             match choice:
                 case 1:
                     run(exe.listar(), directory)
@@ -54,6 +65,15 @@ if __name__ == '__main__':
                     run(exe.previous_dir(), directory)
                     print(f"Current Altered dir: {directory}")
                 case 6:
+                    run(exe.get_module(), directory)
+                case 7:
+                    run(exe.import_module(), directory)
+                case 8:
+                    run(exe.find_path(), directory)
+                case 9:
+                    run(exe.get_forest(), directory)
+                case 10:                    
+                    print("Exiting...")
                     break
             print("----------------------------------")
         except Exception as err:
