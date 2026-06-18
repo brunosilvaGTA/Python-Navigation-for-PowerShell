@@ -50,7 +50,8 @@ if __name__ == '__main__':
             print("7. Importar módulo ActiveDirectory")
             print("8. Encontrar um caminho específico")
             print("9. listar florestas do AD")
-            print("10. Sair")
+            print("10. retornar usuários com campos vazios")
+            print("11. Sair")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -73,6 +74,8 @@ if __name__ == '__main__':
                 case 9:
                     run(exe.get_forest(), directory)
                 case 10:                    
+                    run(exe.verify_empty_fields(), directory)
+                case 11:                    
                     print("Exiting...")
                     break
             print("----------------------------------")
