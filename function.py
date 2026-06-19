@@ -1,3 +1,4 @@
+from importlib.resources import path
 import os
 
 class PowerShellCommands:
@@ -30,5 +31,7 @@ class PowerShellCommands:
         return f'$CaminhoDaPasta = "{path}"; Get-ADUser -Filter "mailNickname -notlike \'*\'" -SearchBase $CaminhoDaPasta -Properties mail, mailNickname, proxyAddresses, ObjectGUID | Select-Object Name, UserPrincipalName, mail, mailNickname, @{{Name="ObjectGUID";Expression={{$_.ObjectGUID.ToString()}}}}, @{{Name="ProxyAddresses";Expression={{$_.proxyAddresses -join \'; \'}}}} | Format-List'
     def get_forest(self):
         return "Get-ADForest"
-        
-    
+    def mailbox_status(self, path=None):
+        if path is None:
+            path = input("Enter the path of the folder you want to check: ")
+        return f'$CaminhoDaPasta = "{path}"; Get-ADUser -Filter * -SearchBase $CaminhoDaPasta -Properties mail, mailNickname, msExchRemoteRecipientType, msExchUserAccountControl | Select-Object Name, mail, mailNickname, @{{Name="RemoteRecipientType";Expression={{$_.msExchRemoteRecipientType}}}}, @{{Name="ExchangeAccountControl";Expression={{$_.msExchUserAccountControl}}}}'

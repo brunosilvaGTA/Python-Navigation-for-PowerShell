@@ -33,7 +33,6 @@ if not is_admin():
 else:
     print("Running without privilegies...")
     subprocess.run("net session", shell=True)
-    input("Press enter to exit...")
 
 if __name__ == '__main__':
     exe = PowerShellCommands()
@@ -51,7 +50,8 @@ if __name__ == '__main__':
             print("8. Encontrar um caminho específico")
             print("9. listar florestas do AD")
             print("10. retornar usuários com campos vazios")
-            print("11. Sair")
+            print("11. Verificar status de caixa de correio")
+            print("12. Exit")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -76,8 +76,10 @@ if __name__ == '__main__':
                 case 10:                    
                     run(exe.verify_empty_fields(), directory)
                 case 11:                    
+                    run(exe.mailbox_status(), directory)
+                case 12:
                     print("Exiting...")
-                    break
+                    break   
             print("----------------------------------")
         except Exception as err:
             print("Something went wrong", err)
