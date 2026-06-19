@@ -40,46 +40,37 @@ if __name__ == '__main__':
     while True:
         try:
             print("Select your action:")
-            print("1. Listar elementos na pasta.")
-            print("2. Ver configurações de IP.")
-            print("3. Ver políticas de execução.")
-            print("4. Ver diretório atual.")
-            print("5. Voltar uma pasta")
-            print("6. Ver listas de módulos disponíveis")
-            print("7. Importar módulo ActiveDirectory")
-            print("8. Encontrar um caminho específico")
-            print("9. listar florestas do AD")
-            print("10. retornar usuários com campos vazios")
-            print("11. Verificar status de caixa de correio")
-            print("12. Exit")
+            #print("1. Listar elementos na pasta.")
+            #print("2. Ver configurações de IP.")
+            #print("3. Ver políticas de execução.")
+            #print("4. Ver diretório atual.")
+            #print("5. Voltar uma pasta")
+            print("1. Ver listas de módulos disponíveis.")
+            print("2. Importar módulo ActiveDirectory.")
+            print("3. Encontrar um caminho específico.(precisa de path)")
+            print("4. Listar florestas do AD")
+            print("5. Retornar usuários com campos vazios.(precisa de path)")
+            print("6. Verificar status de caixa de correio.(precisa de path)")
+            print("7. Ver usuários fantasmas.(precisa de path)")
+            print("8. Sair.")
             choice = int(input(" "))
             match choice:
                 case 1:
-                    run(exe.listar(), directory)
-                case 2: 
-                    run(exe.ipconfig(), directory)
-                case 3:
-                    run(exe.executionpolicy(), directory)
-                case 4:
-                    print(f"Current dir: {directory}")
-                case 5:
-                    run(exe.previous_dir(), directory)
-                    print(f"Current Altered dir: {directory}")
-                case 6:
                     run(exe.get_module(), directory)
-                case 7:
+                case 2:
                     run(exe.import_module(), directory)
-                case 8:
+                case 3:
                     run(exe.find_path(), directory)
-                case 9:
+                case 4:
                     run(exe.get_forest(), directory)
-                case 10:                    
+                case 5:                    
                     run(exe.verify_empty_fields(), directory)
-                case 11:                    
+                case 6:                    
                     run(exe.mailbox_status(), directory)
-                case 12:
-                    print("Exiting...")
-                    break   
+                case 7:
+                    run(exe.mailbox_empty(), directory)  
+                case 8:
+                    break
             print("----------------------------------")
         except Exception as err:
             print("Something went wrong", err)
