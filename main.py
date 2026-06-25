@@ -2,7 +2,7 @@ import subprocess, os, ctypes, sys
 from function import PowerShellCommands
 
 def run(cmd, current_dir):
-    completed = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True, cwd=current_dir)
+    completed = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True,encoding="utf-8", errors="replace", cwd=current_dir)
     if completed.returncode != 0:
         print(f"\n An error occurred: {completed.stderr.strip()}")
     else:
@@ -47,12 +47,14 @@ if __name__ == '__main__':
             #print("5. Voltar uma pasta")
             print("1. Ver listas de módulos disponíveis.")
             print("2. Importar módulo ActiveDirectory.")
-            print("3. Encontrar um caminho específico.(precisa de path)")
+            print("3. Encontrar um caminho específico.(path)")
             print("4. Listar florestas do AD")
             print("5. Retornar usuários com campos vazios.(precisa de path)")
             print("6. Verificar status de caixa de correio.(precisa de path)")
             print("7. Ver usuários fantasmas.(precisa de path)")
-            print("8. Sair.")
+            print("8. Ver objetos em uma pasta.(precisa de path)")
+            print("9. Ver membros de um grupo")
+            print("10. Sair")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -70,6 +72,10 @@ if __name__ == '__main__':
                 case 7:
                     run(exe.mailbox_empty(), directory)  
                 case 8:
+                    run(exe.return_objetcs(), directory)
+                case 9: 
+                    run(exe.return_members(), directory)
+                case 10:
                     break
             print("----------------------------------")
         except Exception as err:

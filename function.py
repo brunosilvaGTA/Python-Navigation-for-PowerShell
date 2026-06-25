@@ -30,7 +30,7 @@ class PowerShellCommands:
         # Adicionado: '| Format-List' no final para o caminho/e-mails não virem cortados.
         return f'$CaminhoDaPasta = "{path}"; Get-ADUser -Filter "mailNickname -notlike \'*\'" -SearchBase $CaminhoDaPasta -Properties mail, mailNickname, proxyAddresses, ObjectGUID | Select-Object Name, UserPrincipalName, mail, mailNickname, @{{Name="ObjectGUID";Expression={{$_.ObjectGUID.ToString()}}}}, @{{Name="ProxyAddresses";Expression={{$_.proxyAddresses -join \'; \'}}}} | Format-List'
     def get_forest(self):
-        return "Get-ADForest"
+        return "Get-ADForest | Out-String -Width 500"
     def mailbox_status(self, path=None):
         if path is None:
             path = input("Enter the path of the folder you want to check: ")
@@ -38,4 +38,12 @@ class PowerShellCommands:
     def mailbox_empty(self, path=None):
         if path is None:
             path = input("Enter path: ")
-        return f'$CaminhoDaPasta = "{path}"; Get-ADUser -Filter "msExchUserAccountControl -notlike \'*\'" -SearchBase $CaminhoDaPasta -Properties mail, mailNickname, msExchRemoteRecipientType, msExchUserAccountControl | Select-Object Name, UserPrincipalName, mail, mailNickname, @{{Name="RemoteRecipientType";Expression={{$_.msExchRemoteRecipientType}}}}, @{{Name="ExchangeAccountControl";Expression={{$_.msExchUserAccountControl}}}} > UsuariosVazios.txt'
+        return f'$CaminhoDaPasta = "{path}"; Get-ADUser -Filter "msExchUserAccountControl -notlike \'*\'" -SearchBase $CaminhoDaPasta -Properties mail, mailNickname, msExchRemoteRecipientType, msExchUserAccountControl | Select-Object Name, UserPrincipalName, mail, mailNickname, @{{Name="RemoteRecipientType";Expression={{$_.msExchRemoteRecipientType}}}}, @{{Name="ExchangeAccountControl";Expression={{$_.msExchUserAccountControl}}}}'
+    def return_objetcs(self, path=None):
+        if path is None:
+            path = input("Enter path: ")
+        return f'$CaminhoDaPasta = "{path}"; Get-ADObject -Filter "ObjectClass -eq \'user\' -or ObjectClass -eq \'group\' " -SearchBase $CaminhoDaPasta -Properties ObjectClass, Name | Select-Object Name, ObjectClass | Format-Table -AutoSize'
+    def return_members(self, group=None):
+        if group is None:
+            group = input("Enter group name: ")
+        return f'Get-ADGroupMember -Filter \'Name -like "*{group}*"\' | Select-Object Name, objectClass | Format-Table -AutoSize'
