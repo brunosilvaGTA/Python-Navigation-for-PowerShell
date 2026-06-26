@@ -57,4 +57,18 @@ class PowerShellCommands:
     def return_members(self, group=None):
         if group is None:
             group = input("Enter group name: ")
-        return f'Get-ADGroupMember -Filter \'Name -like "*{group}*"\' | Select-Object Name, objectClass | Format-Table -AutoSize'
+        return f'Get-ADGroup -Filter "Name -like \'*{group}*\'" | ForEach-Object {{ $NomeGrupo = $_.Name; Get-ADGroupMember -Identity $_.DistinguishedName | ForEach-Object {{ $Membro = $_; $AdObj = Get-ADObject -Identity $Membro.DistinguishedName -Properties Enabled; [PSCustomObject]@{{ Grupo = $NomeGrupo; Membro = $Membro.Name; Tipo = $Membro.objectClass; Status = if ($AdObj.Enabled -eq $false) {{ "Inactive" }} else {{ "Active" }} }} }} }} | Format-Table -AutoSize'
+    
+    def get_all_members_of_all_groups(self, path=None):
+        if path is None:
+            path = input("Enter Path: ")
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU | ForEach-Object {{ $NomeGrupo = $_.Name; Get-ADGroupMember -Identity $_.DistinguishedName | ForEach-Object {{ $Membro = $_; $AdObj = Get-ADObject -Identity $Membro.DistinguishedName -Properties Enabled; [PSCustomObject]@{{ Grupo = $NomeGrupo; Membro = $Membro.Name; Tipo = $Membro.objectClass; Status = if ($AdObj.Enabled -eq $false) {{ "Inactive" }} else {{ "Active" }} }} }} }} | Format-Table -AutoSize'
+    
+    def get_empty_groups(self, path=None):
+        if path is None:
+            path = input("Enter Path: ")
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter "member -notlike \'*\'" -SearchBase $CaminhoDaOU -Properties member, GroupScope, GroupCategory | Select-Object Name, GroupScope, GroupCategory | Format-Table -AutoSize >> GruposSemMembros.txt'
+    def return_users_without_groups(self, path=None):
+        if path is None:
+            path = input("Enter Path: ")
+        return f'$CaminhoDaOU = "{path}"; Get-ADUser -Filter "MemberOf -notlike \'*\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties MemberOf, Enabled | Select-Object Name, UserPrincipalName, @{{Name="Status";Expression={{if ($_.Enabled -eq $true) {{ "Active" }} else {{ "Inactive" }} }} }} | Format-Table -AutoSize'

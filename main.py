@@ -54,7 +54,10 @@ if __name__ == '__main__':
             print("7. Get ghost-users(requires Path)")
             print("8. Get objects in a Folder (requires Path)")
             print("9. Get a Group members (requires Group name)")
-            print("10. Exit")
+            print("10. Get ALL members of ALL groups (requires path)")
+            print("11. Get empty Groups")
+            print("12. Get users without Group")
+            print("13. Exit")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -76,6 +79,12 @@ if __name__ == '__main__':
                 case 9: 
                     run(exe.return_members(), directory)
                 case 10:
+                    run(exe.get_all_members_of_all_groups(), directory)
+                case 11:
+                    run(exe.get_empty_groups(), directory)
+                case 12:
+                    run(exe.return_users_without_groups(), directory)
+                case 13:
                     break
             print("----------------------------------")
         except Exception as err:
