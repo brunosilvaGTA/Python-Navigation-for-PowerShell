@@ -57,7 +57,8 @@ if __name__ == '__main__':
             print("10. Get ALL members of ALL groups (requires path)")
             print("11. Get empty Groups")
             print("12. Get users without Group")
-            print("13. Exit")
+            print("13. Get groups with disabled users")
+            print("14. Exit")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -85,6 +86,8 @@ if __name__ == '__main__':
                 case 12:
                     run(exe.return_users_without_groups(), directory)
                 case 13:
+                    run(exe.return_groups_with_disabled_users(), directory)
+                case 14:
                     break
             print("----------------------------------")
         except Exception as err:

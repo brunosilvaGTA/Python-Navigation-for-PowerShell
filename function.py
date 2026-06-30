@@ -71,4 +71,11 @@ class PowerShellCommands:
     def return_users_without_groups(self, path=None):
         if path is None:
             path = input("Enter Path: ")
-        return f'$CaminhoDaOU = "{path}"; Get-ADUser -Filter "MemberOf -notlike \'*\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties MemberOf, Enabled | Select-Object Name, UserPrincipalName, @{{Name="Status";Expression={{if ($_.Enabled -eq $true) {{ "Active" }} else {{ "Inactive" }} }} }} | Format-Table -AutoSize'
+        return f'$CaminhoDaOU = "{path}"; Get-ADUser -Filter "MemberOf -notlike \'*\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties MemberOf, Enabled | Select-Object Name, UserPrincipalName, @{{Name="Status";Expression={{if ($_.Enabled) {{ "Active" }} else {{ "Inactive" }} }} }} | Format-Table -AutoSize >> UsuariosSemGrupo.txt'
+    def return_groups_with_disabled_users(self, path=None):
+        if path is None:
+            path = input("Enter the path of the folder (OU DistinguishedName) to scan: ")
+        
+        # 1. Substituído Get-ADGroupMember por $_.member para evitar o limite de 5000 itens.
+        # 2. Processamento direto dos membros para evitar o timeout de enumeração inválida.
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU -Properties member | ForEach-Object {{ $NomeGrupo = $_.Name; $_.member | ForEach-Object {{ $MembroDN = $_; $User = Get-ADUser -Identity $MembroDN -ErrorAction SilentlyContinue; if ($User -and $User.Enabled -eq $false) {{ [PSCustomObject]@{{ Grupo = $NomeGrupo; UsuarioDesabilitado = $User.Name }} }} }} }} | Format-Table -AutoSize >> UsuariosIntrusos.txt'
