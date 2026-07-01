@@ -4,18 +4,6 @@ import os
 class PowerShellCommands:
     def __init__(self, dir=None):
         self.dir = dir if dir else os.getcwd()
-        
-    def listar(self):
-        return "Get-ChildItem"
-    
-    def ipconfig(self):
-        return "ipconfig"
-    
-    def executionpolicy(self):
-        return "Get-ExecutionPolicy"
-    
-    def previous_dir(self):
-        return "cd.."
     
     def get_module(self):
         return "Get-Module -ListAvailable"
@@ -61,21 +49,25 @@ class PowerShellCommands:
     
     def get_all_members_of_all_groups(self, path=None):
         if path is None:
-            path = input("Enter Path: ")
-        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU | ForEach-Object {{ $NomeGrupo = $_.Name; Get-ADGroupMember -Identity $_.DistinguishedName | ForEach-Object {{ $Membro = $_; $AdObj = Get-ADObject -Identity $Membro.DistinguishedName -Properties Enabled; [PSCustomObject]@{{ Grupo = $NomeGrupo; Membro = $Membro.Name; Tipo = $Membro.objectClass; Status = if ($AdObj.Enabled -eq $false) {{ "Inactive" }} else {{ "Active" }} }} }} }} | Format-Table -AutoSize'
+            path = input("Enter Path: ")        
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU -Properties member | ForEach-Object {{ $NomeGrupo = $_.Name; $_.member | ForEach-Object {{ $MembroDN = $_; $User = Get-ADUser -Identity $MembroDN -ErrorAction SilentlyContinue; if ($User) {{ [PSCustomObject]@{{ Grupo = $NomeGrupo; Membro = $User.Name; Tipo = "user"; Status = $User.Enabled.ToString().Replace("True","Active").Replace("False","Inactive") }} }} }} }} | Format-Table -AutoSize'
     
     def get_empty_groups(self, path=None):
         if path is None:
             path = input("Enter Path: ")
-        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter "member -notlike \'*\'" -SearchBase $CaminhoDaOU -Properties member, GroupScope, GroupCategory | Select-Object Name, GroupScope, GroupCategory | Format-Table -AutoSize >> GruposSemMembros.txt'
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter "member -notlike \'*\'" -SearchBase $CaminhoDaOU -Properties member, GroupScope, GroupCategory | Select-Object Name, GroupScope, GroupCategory | Format-Table -AutoSize'
+    
     def return_users_without_groups(self, path=None):
         if path is None:
             path = input("Enter Path: ")
-        return f'$CaminhoDaOU = "{path}"; Get-ADUser -Filter "MemberOf -notlike \'*\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties MemberOf, Enabled | Select-Object Name, UserPrincipalName, @{{Name="Status";Expression={{if ($_.Enabled) {{ "Active" }} else {{ "Inactive" }} }} }} | Format-Table -AutoSize >> UsuariosSemGrupo.txt'
+        return f'$CaminhoDaOU = "{path}"; Get-ADUser -Filter "MemberOf -notlike \'*\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties MemberOf, Enabled | Select-Object Name, UserPrincipalName, @{{Name="Status";Expression={{if ($_.Enabled) {{ "Active" }} else {{ "Inactive" }} }} }} | Format-Table -AutoSize'
+    
     def return_groups_with_disabled_users(self, path=None):
         if path is None:
-            path = input("Enter the path of the folder (OU DistinguishedName) to scan: ")
-        
-        # 1. Substituído Get-ADGroupMember por $_.member para evitar o limite de 5000 itens.
-        # 2. Processamento direto dos membros para evitar o timeout de enumeração inválida.
-        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU -Properties member | ForEach-Object {{ $NomeGrupo = $_.Name; $_.member | ForEach-Object {{ $MembroDN = $_; $User = Get-ADUser -Identity $MembroDN -ErrorAction SilentlyContinue; if ($User -and $User.Enabled -eq $false) {{ [PSCustomObject]@{{ Grupo = $NomeGrupo; UsuarioDesabilitado = $User.Name }} }} }} }} | Format-Table -AutoSize >> UsuariosIntrusos.txt'
+            path = input("Enter Path: ")    
+        return f'$CaminhoDaOU = "{path}"; Get-ADGroup -Filter * -SearchBase $CaminhoDaOU -Properties member | ForEach-Object {{ $NomeGrupo = $_.Name; $_.member | ForEach-Object {{ $MembroDN = $_; $User = Get-ADUser -Identity $MembroDN -ErrorAction SilentlyContinue; if ($User -and $User.Enabled -eq $false) {{ [PSCustomObject]@{{ Grupo = $NomeGrupo; UsuarioDesabilitado = $User.Name }} }} }} }} | Format-Table -AutoSize'
+    
+    def return_inactive_active_users(self, path=None, days=90):
+        if path is None:
+            path = input("Enter Path: ")
+        return f'$Corte = (Get-Date).AddDays(-{days}); $CaminhoDaOU = "{path}"; Get-ADUser -Filter "Enabled -eq \'$true\'" -SearchBase $CaminhoDaOU -SearchScope Subtree -Properties LastLogonDate | Where-Object {{ $_.LastLogonDate -lt $Corte -or $null -eq $_.LastLogonDate }} | Select-Object Name, UserPrincipalName, @{{Name="UltimoLogon";Expression={{ if ($_.LastLogonDate) {{ $_.LastLogonDate.ToString("dd/MM/yyyy") }} else {{ "NUNCA LOGOU" }} }} }} | Format-Table -AutoSize'
