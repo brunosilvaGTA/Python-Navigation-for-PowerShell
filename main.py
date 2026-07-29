@@ -2,7 +2,7 @@ import subprocess, os, ctypes, sys
 from function import PowerShellCommands
 
 def run(cmd, current_dir):
-    completed = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True, cwd=current_dir)
+    completed = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True,encoding="utf-8", errors="replace", cwd=current_dir)
     if completed.returncode != 0:
         print(f"\n An error occurred: {completed.stderr.strip()}")
     else:
@@ -39,20 +39,35 @@ if __name__ == '__main__':
     directory = os.getcwd()
     while True:
         try:
-            print("Select your action:")
-            #print("1. Listar elementos na pasta.")
-            #print("2. Ver configurações de IP.")
-            #print("3. Ver políticas de execução.")
-            #print("4. Ver diretório atual.")
-            #print("5. Voltar uma pasta")
-            print("1. Get module list available")
-            print("2. Import module ActiveDirectory")
-            print("3. Find path")
-            print("4. List AD Forest")
-            print("5. Get user empty fields (requires path)")
-            print("6. Get mailbox status (requires path)")
-            print("7. Get ghost-users (requires path)")
-            print("8. Quit")
+            print("┌──────────────────────────────────────────────────────────────┐")
+            print("│              PAINEL DE AUDITORIA E GOVERNANÇA                │")
+            print("└──────────────────────────────────────────────────────────────┘")
+            print(" ⚙️  SISTEMA & INFRAESTRUTURA")
+            print("  [01] Listar Módulos PowerShell Disponíveis")
+            print("  [02] Importar Módulo Active Directory")
+            print("  [03] Mapear Caminhos de Estrutura (Find Path)")
+            print("  [04] Exibir Informações da Floresta AD")
+            print("---")
+            print(" 📧 AUDITORIA EXCHANGE & CAIXAS DE CORREIO")
+            print("  [05] Identificar Contas com Campos Vazios    --> [Requer Caminho/OU]")
+            print("  [06] Diagnosticar Status de Caixas Exchange  --> [Requer Caminho/OU]")
+            print("  [07] Listar Contas sem Caixa Provisionada    --> [Requer Caminho/OU]")
+            print("---")
+            print(" 👥 GOVERNANÇA DE GRUPOS & IDENTIDADES")
+            print("  [08] Listar Objetos de uma Pasta (Contas/OU)--> [Requer Caminho/OU]")
+            print("  [09] Consultar Membros de um Grupo Específico--> [Requer Nome do Grupo]")
+            print("  [10] Exportar Todos os Membros de Todos os Grupos -> [Requer Caminho/OU]")
+            print("  [11] Detectar Grupos Órfãos (Sem Membros)")
+            print("  [12] Localizar Usuários Avulsos (Sem Grupo)")
+            print("  [13] Identificar Contas Desabilitadas em Grupos")
+            print("  [14] Ver grupos de um usuário")
+            print("  [15] Ver locação de usuários (Por Arquivo de Texto)")
+            print("---")
+            print(" 🛡️  SEGURANÇA E CONFORMIDADE")
+            print("  [16] Auditar Contas Ativas sem Logon (+90 dias) -> [Requer Caminho/OU]")
+            print("---")
+            print(" ❌ [17] Sair do Sistema")
+            print("────────────────────────────────────────────────────────────────")
             choice = int(input(" "))
             match choice:
                 case 1:
@@ -70,6 +85,24 @@ if __name__ == '__main__':
                 case 7:
                     run(exe.mailbox_empty(), directory)  
                 case 8:
+                    run(exe.return_objetcs(), directory)
+                case 9: 
+                    run(exe.return_members(), directory)
+                case 10:
+                    run(exe.get_all_members_of_all_groups(), directory)
+                case 11:
+                    run(exe.get_empty_groups(), directory)
+                case 12:
+                    run(exe.return_users_without_groups(), directory)
+                case 13:
+                    run(exe.return_groups_with_disabled_users(), directory)
+                case 14: 
+                    run(exe.return_user_groups(), directory)
+                case 15:
+                    run(exe.get_users_office_location(), directory)
+                case 16:
+                    run(exe.return_inactive_active_users(), directory)
+                case 17:
                     break
             print("----------------------------------")
         except Exception as err:
