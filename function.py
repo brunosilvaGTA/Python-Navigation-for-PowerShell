@@ -1,5 +1,5 @@
 from importlib.resources import path
-import os
+import os, json, subprocess
 
 class PowerShellCommands:
     def __init__(self, dir=None):
@@ -42,6 +42,11 @@ class PowerShellCommands:
             path = input("Enter path: ")
         return f'$CaminhoDaPasta = "{path}"; Get-ADObject -Filter "ObjectClass -eq \'user\' -or ObjectClass -eq \'group\' " -SearchBase $CaminhoDaPasta -Properties ObjectClass, Name | Select-Object Name, ObjectClass | Format-Table -AutoSize'
     
+    def return_objetcs2(self, path=None):
+            if path is None:
+                path = input("Enter path: ")
+            return f'$CaminhoDaPasta = "{path}"; Get-ADObject -Filter "ObjectClass -eq \'user\' -or ObjectClass -eq \'group\' " -SearchBase $CaminhoDaPasta -Properties ObjectClass, Name | Select-Object Name | Format-Table -AutoSize >> Terminais.txt'
+    
     def return_members(self, group=None):
         if group is None:
             group = input("Enter group name: ")
@@ -83,3 +88,48 @@ class PowerShellCommands:
         
         # O pipe (|) foi adicionado antes do Out-File para passar os dados corretamente
         return f'$Path = "{file_path}"; if (Test-Path $Path) {{ (Get-Content $Path | ForEach-Object {{ $_.Replace(",", "").Trim() }} | Where-Object {{ $_ -ne "" }} | ForEach-Object {{ $Matricula = $_; $User = Get-ADUser -Filter "SamAccountName -eq \'$Matricula\' -or UserPrincipalName -like \'*$Matricula*\'" -Properties physicalDeliveryOfficeName | Select-Object -First 1; if ($User) {{ [PSCustomObject]@{{ Matricula = $Matricula; Nome = $User.Name; Sede = if ($User.physicalDeliveryOfficeName) {{ $User.physicalDeliveryOfficeName }} else {{ "NAO INFORMADO" }} }} }} else {{ [PSCustomObject]@{{ Matricula = $Matricula; Nome = "NAO ENCONTRADO"; Sede = "N/A" }} }} }} | Format-Table -AutoSize) | Out-File -FilePath "levantamento_fevereiro.txt" -Encoding utf8; Write-Host "Processamento concluido! Salvo em localidades.txt" }} else {{ Write-Host "Arquivo $Path nao encontrado no diretório atual." }}'
+    
+    def get_mac_from_file(self, input_file=None, output_file="resultado_macs.txt"):
+        if input_file is None:
+            input_file = input("Digite o caminho do arquivo TXT com a lista de computadores: ")
+        
+        full_input_path = os.path.join(self.dir, input_file).replace("\\", "/")
+        full_output_path = os.path.join(self.dir, output_file).replace("\\", "/")
+            
+        return (
+            f'$InputFile = "{full_input_path}"; '
+            f'$OutputFile = "{full_output_path}"; '
+            f'if (Test-Path $InputFile) {{ '
+                f'(Get-Content $InputFile | Where-Object {{ $_.Trim() -ne "" }} | ForEach-Object {{ '
+                    # Conversao forçada e explicita para String e remoçao de caracteres nulos ou especiais de quebra de linha
+                    f'$ComputerName = [string]$_.Trim().Replace("`r", "").Replace("`n", ""); '
+                    f'try {{ '
+                        # Resolve o IP garantindo que a saída seja uma string pura do IPAddress
+                        f'$DNS = Resolve-DnsName -Name $ComputerName -Type A -ErrorAction Stop | Select-Object -First 1; '
+                        f'$IP = [string]$DNS.IPAddress; '
+                        
+                        # Ping utilizando parametro universal de compatibilidade (-ComputerName)
+                        f'$null = Test-Connection -ComputerName $IP -Count 1 -Quiet -ErrorAction SilentlyContinue; '
+                        
+                        # Consulta do MAC com tempo de respiro para o ARP
+                        f'Start-Sleep -Milliseconds 50; '
+                        f'$Neighbor = Get-NetNeighbor -IPAddress $IP -ErrorAction SilentlyContinue | Select-Object -First 1; '
+                        
+                        f'[PSCustomObject]@{{ '
+                            f'ComputerName = $ComputerName; '
+                            f'IPAddress    = $IP; '
+                            f'MACAddress   = if ($Neighbor.LinkLayerAddress) {{ $Neighbor.LinkLayerAddress }} else {{ "Sem resposta no ARP" }} '
+                        f'}} '
+                    f'}} catch {{ '
+                        f'[PSCustomObject]@{{ '
+                            f'ComputerName = $ComputerName; '
+                            f'IPAddress    = "Falha DNS"; '
+                            f'MACAddress   = "N/A" '
+                        f'}} '
+                    f'}} '
+                f'}} | Format-Table -AutoSize) | Out-File -FilePath $OutputFile -Encoding utf8; '
+                f'Write-Host "Processamento concluido! Resultado salvo em: $OutputFile"'
+            f'}} else {{ '
+                f'Write-Host "Arquivo $InputFile nao encontrado."'
+            f'}}'
+        )

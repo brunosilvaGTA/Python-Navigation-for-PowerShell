@@ -55,6 +55,7 @@ if __name__ == '__main__':
             print("---")
             print(" 👥 GOVERNANÇA DE GRUPOS & IDENTIDADES")
             print("  [08] Listar Objetos de uma Pasta (Contas/OU)--> [Requer Caminho/OU]")
+            print("  [08.2] Listar somente nomes dos Objetos de uma Pasta (Contas/OU)--> [Requer Caminho/OU]")
             print("  [09] Consultar Membros de um Grupo Específico--> [Requer Nome do Grupo]")
             print("  [10] Exportar Todos os Membros de Todos os Grupos -> [Requer Caminho/OU]")
             print("  [11] Detectar Grupos Órfãos (Sem Membros)")
@@ -65,8 +66,9 @@ if __name__ == '__main__':
             print("---")
             print(" 🛡️  SEGURANÇA E CONFORMIDADE")
             print("  [16] Auditar Contas Ativas sem Logon (+90 dias) -> [Requer Caminho/OU]")
+            print("  [17] Encontrar endereço Mac -> [Requer Caminho/OU]")
             print("---")
-            print(" ❌ [17] Sair do Sistema")
+            print(" ❌ [18] Sair do Sistema")
             print("────────────────────────────────────────────────────────────────")
             choice = int(input(" "))
             match choice:
@@ -86,6 +88,8 @@ if __name__ == '__main__':
                     run(exe.mailbox_empty(), directory)  
                 case 8:
                     run(exe.return_objetcs(), directory)
+                case 82:
+                    run(exe.return_objetcs2(), directory)
                 case 9: 
                     run(exe.return_members(), directory)
                 case 10:
@@ -103,6 +107,8 @@ if __name__ == '__main__':
                 case 16:
                     run(exe.return_inactive_active_users(), directory)
                 case 17:
+                    run(exe.get_mac_from_file(), directory)
+                case 18:
                     break
             print("----------------------------------")
         except Exception as err:
